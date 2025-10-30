@@ -1,0 +1,34 @@
+# MLFF Settings
+potential_path: "D:/fairchem_models/uma-s-1p1.pt"
+job_type_opt: "omat"
+job_type_md: "omat"
+
+# Model Creation Settings
+metal: Ni
+oxide: ZrO2
+lattice_plane:
+  a: 1
+  b: 1
+  c: 1
+expand:
+  x: 6
+  y: 6
+  z: 3
+vacuum: 15
+rcut: 4.05
+dist: 2
+
+# Simulated Annealing MD Settings
+md_constrain_layers: 3
+t_heat: 2000
+t_cool: 500
+heat_steps: 2000
+cool_steps: 20000
+stable_steps: 200
+dt_fs: 1.0
+friction: 0.01
+t_damp: 20
+t_chain: 3
+t_loop: 4
+log_interval: 100
+traj_path: "./Test/sphere-sa.traj"

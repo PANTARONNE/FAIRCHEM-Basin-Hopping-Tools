@@ -1,0 +1,32 @@
+# MLFF Settings
+potential_path: "D:/fairchem_models/uma-s-1p1.pt"
+job_type_opt: "omat"
+job_type_bh: "omat"
+
+# Model Creation Settings
+metal: Ni
+oxide: ZrO2
+lattice_plane:
+  a: 1
+  b: 1
+  c: 1
+expand:
+  x: 6
+  y: 6
+  z: 3
+vacuum: 15
+m_num: 3
+o_num: 4
+dist: 2
+
+# Simulated Annealing + Basin Hopping Settings
+bh_constrain_layers: 3
+temp: 1000
+hop_steps: 200
+disturbance: 0.2
+f_max: 0.05
+step_max: 300
+
+# IO Settings
+cif_path:
+out_path:
