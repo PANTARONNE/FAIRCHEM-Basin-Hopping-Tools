@@ -54,7 +54,8 @@ if __name__ == '__main__':
     Model = cl.set_constrain()
     bh_sa = BasinHoppingSA(system=Model, t_beg=conf["t_beg"], t_end=conf["t_end"], hop_steps=conf["hop_steps"],
                            n_stages=conf["n_stages"], disturbance=conf["disturbance"], f_max=conf["f_max"],
-                           step_max=conf["step_max"], log_file_path=f"%schain-bh.log" % conf["out_path"],
+                           step_max=conf["step_max"],
+                           out_path=conf["out_path"], log_file_path=f"%schain-bh.log" % conf["out_path"],
                            potential_path=conf["potential_path"], job_type=conf["job_type_bh"])
     Opted = bh_sa.run_basin_hopping_sa()
     write(f"%s%s-%s-m%do%d-opt.cif" % (conf["out_path"], conf["metal"], conf["oxide"], conf["m_num"], conf["o_num"]),
