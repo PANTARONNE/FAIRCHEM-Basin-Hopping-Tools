@@ -83,7 +83,7 @@ class BasinHoppingEarlyStop(BasinHopping):
             if self.optimizable.get_gradient().max() > self.fmax:  # When the optimization does not converge
                 self.energy = float('inf')
             elif not self.is_connected():
-                self.energy = float('-inf')
+                self.energy = float('inf')
             else:
                 self.energy = self.optimizable.get_value()
                 if self.lm_trajectory is not None:
@@ -116,11 +116,7 @@ class BasinHoppingEarlyStop(BasinHopping):
             return
         name = self.__class__.__name__
         if En == float('inf'):
-            self.logfile.write('%s: step %d, structural optimization FAIL to converge\n'
-                               % (name, step))
-            self.logfile.flush()
-        elif En == float('-inf'):
-            self.logfile.write('%s: step %d, CAN NOT maintain a single cluster\n'
+            self.logfile.write('%s: step %d, optimization FAIL to converge or CAN NOT maintain one cluster\n'
                                % (name, step))
             self.logfile.flush()
         else:
