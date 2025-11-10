@@ -1,4 +1,4 @@
-from ase.build import bulk, surface
+from ase.build import bulk, surface, hcp0001
 from ase.optimize import LBFGS
 from ase.filters import UnitCellFilter
 from fairchem.core.units.mlip_unit import load_predict_unit
@@ -40,8 +40,12 @@ class CleaveCreator:
 
     def supercell_vacuum(self):
         print("======= Surface Model Created =======")
-        self.slab = surface(self.bulk, self.cleave_vec, layers=self.expand[-1], vacuum=self.thickness)
-        self.slab = self.slab.repeat((self.expand[0], self.expand[1], 1))
+        if self.structure['type'] == 'hcp' and self.cleave_vec == (0, 0, 1):
+            self.slab = hcp0001(self.symbol, size=(self.expand[0], self.expand[1], self.expand[2]),
+                                a=self.structure["a"], c=self.structure["c"], vacuum=self.thickness)
+        else:
+            self.slab = surface(self.bulk, self.cleave_vec, layers=self.expand[-1], vacuum=self.thickness)
+            self.slab = self.slab.repeat((self.expand[0], self.expand[1], 1))
 
     def build_surface(self):
         self.lattice_optimize()
