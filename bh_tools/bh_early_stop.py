@@ -1,6 +1,6 @@
 from typing import IO, Type, Union
 import numpy as np
-from copy import deepcopy
+from ase.constraints import FixAtoms
 from ase import Atoms, units, neighborlist
 from ase.io.trajectory import Trajectory
 from ase.optimize.fire import FIRE
@@ -21,7 +21,7 @@ class BasinHoppingEarlyStop(BasinHopping):
         fmax: float = 0.1,
         step_max: int = 200,
         dr: float = 0.1,
-        ratio: float = 0.8,
+        ratio: float = 0.95,
         cutoff_factor: float = 1.2,
         logfile: Union[IO, str] = '-',
         optimizer_logfile: str = '-',
@@ -63,9 +63,18 @@ class BasinHoppingEarlyStop(BasinHopping):
 
     def is_connected(self):
         atoms = self._atoms()
-        cutoffs = neighborlist.natural_cutoffs(atoms, mult=self.cutoff_factor)
+        fixed_indices = set()
+
+        for c in atoms.constraints:
+            if isinstance(c, FixAtoms):
+                fixed_indices.update(c.index)
+
+        free_indices = [i for i in range(len(atoms)) if i not in fixed_indices]
+        free_atoms = atoms[free_indices]
+
+        cutoffs = neighborlist.natural_cutoffs(free_atoms, mult=self.cutoff_factor)
         nl = neighborlist.NeighborList(cutoffs, self_interaction=False, bothways=True)
-        nl.update(atoms)
+        nl.update(free_atoms)
         matrix = nl.get_connectivity_matrix(sparse=True)
         n_components, _ = connected_components(matrix)
         return n_components == 1

@@ -31,6 +31,7 @@ def oxide2cif(oxide_name: str):
         "TiO2": "TiO2_mp-554278_primitive.cif",
         "Y2O3": "Y2O3_mp-2652_primitive.cif",
         "MgO": "MgO_mp-1265_primitive.cif",
+        "SiO2": "SiO2_mp-7000_primitive.cif",
     }
     return dic[oxide_name]
 

@@ -183,6 +183,7 @@ class InverseChainBuilder:
             "Y2O3": 2.36,
             "ZrO2": 2.32,
             "MgO": 2.13,
+            "SiO2": 1.62,
         }
         return mo_bond_length[self.cluster_comp] / 2
 
@@ -196,5 +197,6 @@ class InverseChainBuilder:
             "Y2O3": "Y",
             "ZrO2": "Zr",
             "MgO": "Mg",
+            "SiO2": "Si",
         }
         return oxide_metal[self.cluster_comp]
