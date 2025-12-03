@@ -61,7 +61,7 @@ if __name__ == '__main__':
                        vacuum=15, job_type="omat", potential_path="D:/fairchem_models/uma-s-1p1.pt")
     Slab = cc.build_surface()
     icb = InverseChainBuilder(cluster_comp="La2O3", slab=Slab, m_num=3, o_num=6,
-                              oxide_cif='../oxide_models/La2O3_mp-2292_primitive.cif', dist=2)
+                              oxide_cif='../oxide_models/La2O3.cif', dist=2)
     Model = icb.build_inverse()
     cl = ConstrainLayers(Model, sub_layers=3)
     Model = cl.set_constrain()

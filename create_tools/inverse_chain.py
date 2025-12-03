@@ -4,6 +4,9 @@ import random
 from ase import Atom, Atoms
 from ase.neighborlist import NeighborList
 from scipy.spatial.transform import Rotation
+from pymatgen.io.ase import AseAtomsAdaptor
+from pymatgen.analysis.local_env import CrystalNN
+from pymatgen.analysis.bond_valence import BVAnalyzer
 
 
 def calculate_inertia_tensor(atoms):
@@ -12,31 +15,24 @@ def calculate_inertia_tensor(atoms):
     :param atoms: ASE Atoms 对象
     :return: 3x3 惯性张量矩阵
     """
-    # 获取原子位置和质量
     positions = atoms.get_positions()
     masses = atoms.get_masses()
 
-    # 计算质心
     center_of_mass = atoms.get_center_of_mass()
 
-    # 将所有位置移到以质心为原点的坐标系
     positions -= center_of_mass
 
-    # 初始化惯性张量
     inertia_tensor = np.zeros((3, 3))
 
     for pos, mass in zip(positions, masses):
         x, y, z = pos
-        # 对角线元素
         inertia_tensor[0, 0] += mass * (y ** 2 + z ** 2)
         inertia_tensor[1, 1] += mass * (x ** 2 + z ** 2)
         inertia_tensor[2, 2] += mass * (x ** 2 + y ** 2)
-        # 非对角线元素
         inertia_tensor[0, 1] -= mass * x * y
         inertia_tensor[0, 2] -= mass * x * z
         inertia_tensor[1, 2] -= mass * y * z
 
-    # 填充对称部分
     inertia_tensor[1, 0] = inertia_tensor[0, 1]
     inertia_tensor[2, 0] = inertia_tensor[0, 2]
     inertia_tensor[2, 1] = inertia_tensor[1, 2]
@@ -63,6 +59,8 @@ class InverseChainBuilder:
         self.n_oxygen = o_num
         self.dis = dist
         self.bulk = ase.io.read(self.cif)
+        self.mo_length = self.get_bond_length()
+        print(self.mo_length)
         self.cluster = None
         self.model = None
 
@@ -74,8 +72,6 @@ class InverseChainBuilder:
     def build_cluster(self):
         atm = self.bulk.get_chemical_symbols()  # Atoms name
         pos = self.bulk.get_positions()  # Atomic coordinate
-
-        mo_length = self.get_bond_length()
 
         cell = self.bulk.get_cell()
         center = cell.sum(axis=0) / 2
@@ -94,7 +90,7 @@ class InverseChainBuilder:
         n_m = 1
         n_o = 0
 
-        nbl = NeighborList([mo_length for _ in atm], self_interaction=False, bothways=True)
+        nbl = NeighborList([self.mo_length for _ in atm], self_interaction=False, bothways=True)
         nbl.update(self.bulk)
 
         while n_m < self.n_metal:
@@ -174,18 +170,23 @@ class InverseChainBuilder:
         return self.model
 
     def get_bond_length(self):
-        mo_bond_length = {
-            "Al2O3": 1.99,
-            "CeO2": 2.37,
-            "In2O3": 2.24,
-            "La2O3": 2.51,
-            "TiO2": 2.16,
-            "Y2O3": 2.36,
-            "ZrO2": 2.32,
-            "MgO": 2.13,
-            "SiO2": 1.62,
-        }
-        return mo_bond_length[self.cluster_comp] / 2
+        struc = AseAtomsAdaptor.get_structure(self.bulk)
+        bv = BVAnalyzer()
+        struc_oxi = bv.get_oxi_state_decorated_structure(struc)
+        get_bond = CrystalNN()
+
+        bond_length = []
+
+        for i in range(len(struc)):
+            neighs = get_bond.get_nn_info(struc_oxi, i)
+            elem_i = struc[i].specie.symbol
+            for nb in neighs:
+                j = nb['site_index']
+                elem_j = struc[j].specie.symbol
+                d = struc.get_distance(i, j)
+                if i < j and elem_i != elem_j:
+                    bond_length.append(d)
+        return max(bond_length) / 2
 
     def get_oxide_metal(self):
         oxide_metal = {

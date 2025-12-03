@@ -21,19 +21,6 @@ def load_config(config_path):
         return yaml.safe_load(f)
 
 
-def oxide2cif(oxide_name: str):
-    dic = {
-        "ZrO2": "ZrO2_mp-2858_primitive.cif",
-        "Al2O3": "Al2O3_mp-1143_primitive.cif",
-        "CeO2": "CeO2_mp-20194_primitive.cif",
-        "In2O3": "In2O3_mp-22598_primitive.cif",
-        "La2O3": "La2O3_mp-2292_primitive.cif",
-        "TiO2": "TiO2_mp-554278_primitive.cif",
-        "Y2O3": "Y2O3_mp-2652_primitive.cif",
-    }
-    return dic[oxide_name]
-
-
 if __name__ == '__main__':
     args = parse_args()
     conf = load_config(args.config)
@@ -46,7 +33,7 @@ if __name__ == '__main__':
                        job_type=conf["job_type_opt"])
     Slab = cc.build_surface()
     icb = InverseChainBuilder(cluster_comp=conf["oxide"], slab=Slab, m_num=conf["m_num"], o_num=conf["o_num"],
-                              oxide_cif=f"%s%s" % (conf["cif_path"], oxide2cif(conf["oxide"])), dist=conf["dist"])
+                              oxide_cif=f"%s%s" % (conf["cif_path"], conf["oxide"] + '.cif'), dist=conf["dist"])
     Model = icb.build_inverse()
     write(f"%s%s-%s-m%do%d-orig.cif" % (conf["out_path"], conf["metal"], conf["oxide"], conf["m_num"], conf["o_num"]),
           Model, format='cif')
