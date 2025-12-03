@@ -1,6 +1,7 @@
 import numpy as np
 import ase.io
 import random
+import re
 from ase import Atom, Atoms
 from ase.neighborlist import NeighborList
 from scipy.spatial.transform import Rotation
@@ -11,7 +12,7 @@ from pymatgen.analysis.bond_valence import BVAnalyzer
 
 def calculate_inertia_tensor(atoms):
     """
-    计算分子的惯性张量
+    Calculate Inertia Tensor
     :param atoms: ASE Atoms 对象
     :return: 3x3 惯性张量矩阵
     """
@@ -52,7 +53,7 @@ class InverseChainBuilder:
         :param dist:
         """
         self.cluster_comp = cluster_comp
-        self.cluster_m = self.get_oxide_metal()
+        self.cluster_m = self.get_metal()
         self.slab = slab
         self.cif = oxide_cif
         self.n_metal = m_num
@@ -60,7 +61,6 @@ class InverseChainBuilder:
         self.dis = dist
         self.bulk = ase.io.read(self.cif)
         self.mo_length = self.get_bond_length()
-        print(self.mo_length)
         self.cluster = None
         self.model = None
 
@@ -188,16 +188,9 @@ class InverseChainBuilder:
                     bond_length.append(d)
         return max(bond_length) / 2
 
-    def get_oxide_metal(self):
-        oxide_metal = {
-            "Al2O3": "Al",
-            "CeO2": "Ce",
-            "In2O3": "In",
-            "La2O3": "La",
-            "TiO2": "Ti",
-            "Y2O3": "Y",
-            "ZrO2": "Zr",
-            "MgO": "Mg",
-            "SiO2": "Si",
-        }
-        return oxide_metal[self.cluster_comp]
+    def get_metal(self):
+        elements = re.findall(r"[A-Z][a-z]?", self.cluster_comp)
+        metals = [el for el in elements if el != "O"]
+        if len(metals) != 1:
+            raise ValueError("Invalid Oxide")
+        return metals[0]
