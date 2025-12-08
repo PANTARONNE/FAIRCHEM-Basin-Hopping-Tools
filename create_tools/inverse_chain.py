@@ -170,23 +170,30 @@ class InverseChainBuilder:
         return self.model
 
     def get_bond_length(self):
-        struc = AseAtomsAdaptor.get_structure(self.bulk)
-        bv = BVAnalyzer()
-        struc_oxi = bv.get_oxi_state_decorated_structure(struc)
-        get_bond = CrystalNN()
+        ele2length = {  # Elements that Pymatgen CANNOT support
+            "Tc": 2.02,
+        }
+        if self.cluster_m in ele2length.keys():
+            bond_length = ele2length[self.cluster_m]
+            return bond_length / 2
+        else:
+            struc = AseAtomsAdaptor.get_structure(self.bulk)
+            bv = BVAnalyzer()
+            struc_oxi = bv.get_oxi_state_decorated_structure(struc)
+            get_bond = CrystalNN()
 
-        bond_length = []
+            bond_length = []
 
-        for i in range(len(struc)):
-            neighs = get_bond.get_nn_info(struc_oxi, i)
-            elem_i = struc[i].specie.symbol
-            for nb in neighs:
-                j = nb['site_index']
-                elem_j = struc[j].specie.symbol
-                d = struc.get_distance(i, j)
-                if i < j and elem_i != elem_j:
-                    bond_length.append(d)
-        return max(bond_length) / 2
+            for i in range(len(struc)):
+                neighs = get_bond.get_nn_info(struc_oxi, i)
+                elem_i = struc[i].specie.symbol
+                for nb in neighs:
+                    j = nb['site_index']
+                    elem_j = struc[j].specie.symbol
+                    d = struc.get_distance(i, j)
+                    if i < j and elem_i != elem_j:
+                        bond_length.append(d)
+            return max(bond_length) / 2
 
     def get_metal(self):
         elements = re.findall(r"[A-Z][a-z]?", self.cluster_comp)
