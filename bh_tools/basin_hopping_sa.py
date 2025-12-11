@@ -57,17 +57,17 @@ if __name__ == '__main__':
     from create_tools.inverse_chain import InverseChainBuilder
     from constrain_tools.constrain_slab import ConstrainLayers
 
-    cc = CleaveCreator(atom_symbol="Ni", direction=(1, 1, 1), xyz=(6, 6, 3),
+    cc = CleaveCreator(atom_symbol="Cu", direction=(1, 1, 1), xyz=(6, 6, 3),
                        vacuum=15, job_type="omat", potential_path="D:/fairchem_models/uma-s-1p1.pt")
     Slab = cc.build_surface()
-    icb = InverseChainBuilder(cluster_comp="TcO2", slab=Slab, m_num=3, o_num=6,
-                              oxide_cif='../oxide_models/TcO2.cif', dist=2)
+    icb = InverseChainBuilder(cluster_comp="Li2O", slab=Slab, m_num=4, o_num=2,
+                              oxide_cif='../oxide_models/Li2O.cif', dist=2)
     Model = icb.build_inverse()
     cl = ConstrainLayers(Model, sub_layers=3)
     Model = cl.set_constrain()
     view(Model)
-    bh_sa = BasinHoppingSA(system=Model, t_beg=1000, t_end=500, hop_steps=20, n_stages=6,
-                           disturbance=0.3, f_max=0.10, step_max=200, log_file_path="../Test/bh_sa.log",
-                           potential_path="D:/fairchem_models/uma-s-1p1.pt", job_type="omat", out_path='../Test/')
-    opted_struc = bh_sa.run_basin_hopping_sa()
-    view(opted_struc)
+    # bh_sa = BasinHoppingSA(system=Model, t_beg=1000, t_end=500, hop_steps=20, n_stages=6,
+    #                        disturbance=0.3, f_max=0.10, step_max=200, log_file_path="../Test/bh_sa.log",
+    #                        potential_path="D:/fairchem_models/uma-s-1p1.pt", job_type="omat", out_path='../Test/')
+    # opted_struc = bh_sa.run_basin_hopping_sa()
+    # view(opted_struc)

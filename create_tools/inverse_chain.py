@@ -76,7 +76,14 @@ class InverseChainBuilder:
         cell = self.bulk.get_cell()
         center = cell.sum(axis=0) / 2
 
-        m_indices = [i for i, atom in enumerate(self.bulk) if atom.symbol == self.cluster_m]
+        if self.n_metal <= self.n_oxygen:
+            ele1 = self.cluster_m
+            ele2 = 'O'
+        else:
+            ele1 = 'O'
+            ele2 = self.cluster_m
+
+        m_indices = [i for i, atom in enumerate(self.bulk) if atom.symbol == ele1]
         distances = [np.linalg.norm(pos[i] - center) for i in m_indices]
         iat = m_indices[np.argmin(distances)]
 
@@ -87,39 +94,39 @@ class InverseChainBuilder:
         existed_atoms = [iat]
 
         # Init search
-        n_m = 1
-        n_o = 0
+        n_1 = 1
+        n_2 = 0
 
         nbl = NeighborList([self.mo_length for _ in atm], self_interaction=False, bothways=True)
         nbl.update(self.bulk)
 
-        while n_m < self.n_metal:
+        while n_1 < min(self.n_metal, self.n_oxygen):
             ind, _ = nbl.get_neighbors(current_atom)
-            if current_label == self.cluster_m:
-                next_seq = [a for a in ind if self.bulk[a].symbol == "O"]
+            if current_label == ele1:
+                next_seq = [a for a in ind if self.bulk[a].symbol == ele2]
             else:
-                next_seq = [a for a in ind if self.bulk[a].symbol == self.cluster_m]
+                next_seq = [a for a in ind if self.bulk[a].symbol == ele1]
             next_atom = random.sample(next_seq, k=1)[0]
             if next_atom not in existed_atoms:
-                if self.bulk[next_atom].symbol == "O":
-                    n_o += 1
-                    current_label = "O"
+                if self.bulk[next_atom].symbol == ele2:
+                    n_2 += 1
+                    current_label = ele2
                 else:
-                    n_m += 1
-                    current_label = self.cluster_m
+                    n_1 += 1
+                    current_label = ele1
                 self.cluster.append(Atom(atm[next_atom], pos[next_atom]))
                 existed_atoms.append(next_atom)
                 current_atom = next_atom
 
-        if n_o < self.n_oxygen:
+        if n_2 < max(self.n_oxygen, self.n_metal):
             neighbor_o = []
             for atom in existed_atoms:
-                if self.bulk[atom].symbol == self.cluster_m:
+                if self.bulk[atom].symbol == ele1:
                     ind, _ = nbl.get_neighbors(atom)
                     for a in ind:
                         if (a not in existed_atoms) and (a not in neighbor_o):
                             neighbor_o.append(a)
-            extra_o = random.sample(neighbor_o, k=(self.n_oxygen - n_o))
+            extra_o = random.sample(neighbor_o, k=(max(self.n_oxygen, self.n_metal) - n_2))
             for atom in extra_o:
                 self.cluster.append(Atom(atm[atom], pos[atom]))
         print("========== Cluster Created ==========")
